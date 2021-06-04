@@ -7,5 +7,5 @@ Our objective is to classify acnes, but the problems is they are too small in th
 
 We believe it's gonna be real problem, and make the model so poor. so we decide to crop the images so it only show the acnes
 
-[![acnes-pustular-cropping.jpg](https://i.postimg.cc/263YyK1y/acnes-pustular-cropping.jpg)](https://postimg.cc/1nx2YMc1)
+[![acnes-pustular-cropping.jpg](https://i.postimg.cc/Jz1zmK5D/acnes-pustular-cropping.jpg)](https://postimg.cc/QHy3JQPh)
 
