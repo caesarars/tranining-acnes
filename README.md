@@ -74,29 +74,107 @@ def proc_img(filepath):
     return df
 ```
 ```
-train_df = proc_img(training_data)
-print(f'Number of pictures: {train_df.shape[0]}\n')
-print(f'Number of different labels: {len(train_df.Label.unique())}\n')
-print(f'Labels: {train_df.Label}')
+class Callback(tf.keras.callbacks.Callback):
+  def on_epoch_end(self, epoch, logs={}): 
+        if((logs.get('accuracy') > 0.9 and logs.get('val_accuracy') > 0.9) 
+        and (logs.get('loss') < 0.2 and logs.get("val_loss") < 0.24)):   
+          self.model.stop_training = True
 ```
 
 ### Training 3 Acnes
 ```
-def proc_img(filepath):
-    """ Create a DataFrame with the filepath and the labels of the pictures
-    """
-
-    labels = [str(filepath[i]).split("/")[-2] \
-              for i in range(len(filepath))]
-
-    filepath = pd.Series(filepath, name="Filepath").astype(str)
-    labels = pd.Series(labels, name="Label")
-
-    # concate the filpaths and labels
-    df = pd.concat([filepath,labels], axis=1)
-
-    # shuffle the DataFrame and resetIndex
-    df = df.sample(frac=1).reset_index(drop=True)
-
-    return df
+import tensorflow as tf
+ 
+train_generator = tf.keras.preprocessing.image.ImageDataGenerator(
+    rescale=1./255,
+    preprocessing_function=tf.keras.applications.vgg16.preprocess_input,
+    validation_split=0.2
+)
+  
+train_images = train_generator.flow_from_dataframe(
+    dataframe= train_df,
+    x_col = 'Filepath',
+    y_col = 'Label',
+    target_size=(224,224),
+    color_mode='rgb',
+    #class_mode='binary',
+    batch_size=32,
+    shuffle=True,
+    seed=0,
+    subset='training',
+    rotation_image= 30,
+    zoom_range=0.15,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    horizontal_flip=True,
+    fill_mode='nearest'
+)
+val_images = train_generator.flow_from_dataframe(
+    dataframe= train_df,
+    x_col = 'Filepath',
+    y_col = 'Label',
+    target_size=(224,224),
+    color_mode='rgb',
+    #class_mode='binary',
+    batch_size=32,
+    shuffle=True,
+    seed=0,
+    subset='validation',
+    rotation_image= 30,
+    zoom_range=0.15,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    horizontal_flip=True,
+    fill_mode='nearest'
+)
 ```
+```
+pretrained_model = tf.keras.applications.VGG16(
+    input_shape=(224,224,3),
+    include_top=False,
+    weights="imagenet",
+    pooling="max"
+)
+ 
+pretrained_model.trainable = False
+ 
+inputs = pretrained_model.input
+ 
+x = tf.keras.layers.Dense(1000 ,activation='relu')(pretrained_model.output)
+x = tf.keras.layers.BatchNormalization()(x)
+x = tf.keras.layers.Dropout(0.5)(x)
+
+x = tf.keras.layers.Dense(1000 ,activation='relu')(x)
+x = tf.keras.layers.BatchNormalization()(x)
+x = tf.keras.layers.Dropout(0.5)(x)
+
+outputs = tf.keras.layers.Dense(3, activation='softmax')(x)
+ 
+model = tf.keras.Model(inputs=inputs, outputs=outputs)
+model.compile(
+    optimizer='adam',
+    loss='categorical_crossentropy',
+    metrics=['accuracy']
+)
+
+
+ 
+myCallback = Callback()
+
+history = model.fit(
+    train_images,
+    validation_data= val_images,
+    epochs=100,
+    callbacks=[myCallback]
+)
+```
+
+**TRAINING RESULT**
+
+[![training-finish-3acne.jpg](https://i.postimg.cc/HxRbdJ1k/training-finish-3acne.jpg)](https://postimg.cc/dkRh9V0b)
+
+[![plot-training-result-3acne.jpg](https://i.postimg.cc/VkW9nLnK/plot-training-result-3acne.jpg)](https://postimg.cc/0zrJqvtS)
+
+The result shows us that is a Overfitting model.
