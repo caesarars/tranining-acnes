@@ -25,7 +25,7 @@ I think it's not enough for the training so I do **Data Augmentation** by rotati
 [![aug-acnes-pustular-cropping.jpg](https://i.postimg.cc/tCBvQ25T/aug-acnes-pustular-cropping.jpg)](https://postimg.cc/PP8Q1b0s)
 
 ## Training
-Load the datasets from Google Drive
+### Load the datasets from Google Drive
 ```
 drive.mount('/content/drive')
  
@@ -53,7 +53,7 @@ print("total training data : " + str(len(training_data)))
 > - total training data of cystic acne : 1600
 > - total training data : 4820
 
-Processing image, return the image filepath into DataFrame with the labels
+### Processing image, return the image filepath into DataFrame with the labels
 ```
 def proc_img(filepath):
     """ Create a DataFrame with the filepath and the labels of the pictures
@@ -81,7 +81,7 @@ class Callback(tf.keras.callbacks.Callback):
           self.model.stop_training = True
 ```
 
-### Training 3 Acnes
+## Training Acnes (Cystic, Excoraited, and Pustular)
 ```
 import tensorflow as tf
  
